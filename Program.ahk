@@ -1,12 +1,10 @@
-﻿#SingleInstance force
+#SingleInstance force
 ; 
 ; 
 ; === Variables ===
 ; 
 ; 
 ; (Item LocPath)
-locpath_before := "C:\"
-locpath_after := "C:\"
 locpath := "C:\"
 ; 
 ; (Items)
@@ -15,6 +13,7 @@ item_size := "0"
 item_isfolder := "null"
 ; 
 ; 
+goto Begin
 ; === Functions ===
 ; 
 ; 
@@ -37,8 +36,7 @@ return
 ; -----
 GenerateText(ByRef Location)
 {
-LV_Add("", .Back., _, _)
-LV_Add("", .Forward., _, _)
+LV_Add("", .BackToStart., _, _)
 while(true)
 {
 Loop, %Location%*, 1, 0
@@ -74,43 +72,25 @@ Gui, Destroy
 return
 }
 ; -----
-FindText(ByRef Text)
-{
-temp := ""
-
-return temp
-}
-; -----
-OpenItem(ByRef Name, ByRef Folder, ByRef LocPath_Current, ByRef LocPath_Before, ByRef LocPath_After)
+OpenItem(ByRef Name, ByRef Folder, ByRef Loc_Path)
 {
 newpath := ""
 if (Folder=="false")
 {
-Run, %Name%, %LocPath_Current%
-newpath := LocPath_Current
+Run, %Name%, %Loc_Path%
+newpath := Loc_Path
 }
-else if (Name==".Back.")
-{
-locpath_after := LocPath_Current
-newpath := LocPath_Before
-}
-else if (Name==".Forward.")
-{
-locpath_before := LocPath_Current
-newpath := LocPath_After
-}
+else if (Name==".BackToStart.")
+newpath := "C:\"
 else if (Folder=="true")
-{
-locpath_before := LocPath_Current
-newpath := LocPath_Current Name "\"
-}
+newpath := Loc_Path Name "\"
 return newpath
 }
 ; -----
 GatherInput(ByRef CurrentLocation)
 {
 temp := ""
-InputBox, temp, Input File Or Folder Name, Current Location: %CurrentLocation%, , , , (A_ScreenWidth-375) / 2, (A_ScreenHeight-189) * 0.75
+InputBox, temp, Input File Or Folder Name, Current Location: %CurrentLocation%`n`n(Press F1 To Exit Program), , , , (A_ScreenWidth-375) / 2, (A_ScreenHeight-189) * 0.75
 return temp
 }
 ; -----
@@ -154,7 +134,7 @@ if ((input!="")&&(line>0))
 {
 LV_GetText(name, line, 1)
 LV_GetText(folder, line, 3)
-locpath := OpenItem(name, folder, locpath, locpath_before, locpath_after)
+locpath := OpenItem(name, folder, locpath)
 DestroyList()
 break
 }
