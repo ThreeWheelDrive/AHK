@@ -1,0 +1,105 @@
+#SingleInstance force
+;
+;
+; [] Functions []
+;
+;
+GetSettings(FileName, AmountOfSettings)
+{
+	Temp := ""
+	Output := []
+	Loop, % AmountOfSettings
+	{
+		FileReadLine, Temp, % FileName, % A_Index
+		Output.Push(StrSplit(Temp, ": "))
+	}
+	Return Output
+}
+;
+OrderSettings(Text)
+{
+	if ((Text.Length()<=1)&&(Text[1]==""))
+	ExitApp
+	Line := 0
+	Output := []
+	OrderLine := 0
+	OrderOfSettings := ["WindowName", "Resolution", "CheckDelayMS", "ExitOnWinClose"]
+	Loop, % Text.Length()
+	{
+		Ordered := false
+		OrderLine += 1
+		while(Ordered==false)
+		{
+			if (A_Index>Text.Length())
+			ExitApp
+			if (Text[A_Index][1]==OrderOfSettings[OrderLine])
+			{
+				Line := A_Index
+				Ordered := true
+			}
+		}
+		if (Line>Text.Length())
+		ExitApp
+		Output.Push(Text[Line])
+	}
+	Return Output
+}
+;
+;
+; [] Variables []
+;
+;
+if (!FileExist("AWR_Settings.txt"))
+{
+	FileAppend, (
+	WindowName: notepad.exe
+	Resolution: 600x600
+	CheckDelayMS: 5000
+	ExitOnWinClose: No
+	), % "AWR_Settings.txt"
+}
+Settings := OrderSettings(GetSettings("AWR_Settings.txt", 4))
+;
+;
+; [] Tests Before Main Code []
+;
+;
+if ((Settings.Length()<=1)&&(Settings[2]==""))
+ExitApp
+if ((StrSplit(Settings[2][2], "x").Length()<=1)||(StrSplit(Settings[2][2], "x")[1]<=0)||(StrSplit(Settings[2][2], "x")[1]>A_ScreenWidth)||(StrSplit(Settings[2][2], "x")[2]<=0)||(StrSplit(Settings[2][2], "x")[1]>A_ScreenHeight))
+ExitApp
+if (Settings[3][2]<=0)
+ExitApp
+;
+;
+; [] Main Code []
+;
+;
+if (Settings[4][2]=="Yes")
+{
+	while(WinExist("ahk_exe " . Settings[1][2]))
+	{
+		WinMove, , , , , StrSplit(Settings[2][2], "x")[1], StrSplit(Settings[2][2], "x")[2]
+		Sleep, % Settings[3][2]
+	}
+}
+else
+{
+	while(true)
+	{
+		if (WinActive("ahk_exe " . Settings[1][2]))
+		{
+			WinMove, , , , , StrSplit(Settings[2][2], "x")[1], StrSplit(Settings[2][2], "x")[2]
+		}
+		Sleep, % Settings[3][2]
+	}
+}
+ExitApp
+;
+;
+; [] Exit the program by pressing Ctrl, Shift, and Esc []
+;
+;
+^+Esc::
+MsgBox, % Settings[1][1] . " , " . Settings[1][2]
+ExitApp
